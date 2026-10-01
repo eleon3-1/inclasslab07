@@ -1,5 +1,7 @@
 import 'dart:math' show pi;
+
 import 'package:flutter/material.dart';
+
 import 'dart:async';
 import 'dart:math' show pi;
 
@@ -15,10 +17,7 @@ class SmileyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Smiley Painter Lab',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.indigo,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
       home: const DrawingPlayground(),
     );
   }
@@ -32,28 +31,26 @@ class DrawingPlayground extends StatefulWidget {
 }
 
 class _DrawingPlaygroundState extends State<DrawingPlayground> {
-
   double get mood => happiness / 100; // 0.0 sad → 1.0 happy
   FaceType selectedFace = FaceType.classic;
   String petName = 'The Man';
   int happiness = 50;
   int hunger = 50;
   Timer? _hungerTimer;
-  final TextEditingController _nameController =
-    TextEditingController(text: 'The Man');
+  final TextEditingController _nameController = TextEditingController(
+    text: 'The Man',
+  );
 
-    @override
-void initState() {
-  super.initState();
-  _startHungerTimer();
-}
+  @override
+  void initState() {
+    super.initState();
+    _startHungerTimer();
+  }
 
-void _startHungerTimer() {
-  _hungerTimer?.cancel();
+  void _startHungerTimer() {
+    _hungerTimer?.cancel();
 
-  _hungerTimer = Timer.periodic(
-    const Duration(seconds: 30),
-    (timer) {
+    _hungerTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -67,56 +64,48 @@ void _startHungerTimer() {
           hunger += 5;
         }
       });
-    },
-  );
-}
+    });
+  }
 
-@override
-void dispose() {
-  _hungerTimer?.cancel();
-  _nameController.dispose();
-  super.dispose();
-}
-
-
+  @override
+  void dispose() {
+    _hungerTimer?.cancel();
+    _nameController.dispose();
+    super.dispose();
+  }
 
   int _clampMeter(int value) {
-  return value.clamp(0, 100).toInt();
+    return value.clamp(0, 100).toInt();
   }
 
   void _feedPet() {
-  final nextHunger = _clampMeter(hunger - 10);
+    final nextHunger = _clampMeter(hunger - 10);
 
-  
-  final happinessChange = nextHunger < 30 ? -20 : 10;
+    final happinessChange = nextHunger < 30 ? -20 : 10;
 
-  setState(() {
-    hunger = nextHunger;
-    happiness = _clampMeter(happiness + happinessChange);
-    
-  });
-}
+    setState(() {
+      hunger = nextHunger;
+      happiness = _clampMeter(happiness + happinessChange);
+    });
+  }
 
-void _playPet() {
-  setState(() {
-    happiness = _clampMeter(happiness + 15);
-    hunger = _clampMeter(hunger + 10);
-   
-  });
-}
-void _resetPet() {
-  _hungerTimer?.cancel();
+  void _playPet() {
+    setState(() {
+      happiness = _clampMeter(happiness + 15);
+      hunger = _clampMeter(hunger + 10);
+    });
+  }
 
-  setState(() {
-    happiness = 50;
-    hunger = 50;
-  });
+  void _resetPet() {
+    _hungerTimer?.cancel();
 
-  _startHungerTimer();
-}
+    setState(() {
+      happiness = 50;
+      hunger = 50;
+    });
 
-
-
+    _startHungerTimer();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +116,9 @@ void _resetPet() {
           padding: const EdgeInsets.all(16),
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final canvasSide =
-                  constraints.maxWidth.clamp(0.0, 300.0).toDouble();
+              final canvasSide = constraints.maxWidth
+                  .clamp(0.0, 300.0)
+                  .toDouble();
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -138,54 +128,51 @@ void _resetPet() {
                     decoration: const InputDecoration(
                       labelText: 'Pet name',
                       border: OutlineInputBorder(),
-      ),
-    ),
-    const SizedBox(height: 8),
-    ElevatedButton(
-      onPressed: () {
-        final newName = _nameController.text.trim();
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      final newName = _nameController.text.trim();
 
+                      if (newName.isEmpty) return;
 
+                      setState(() {
+                        petName = newName;
+                      });
+                      FocusScope.of(context).unfocus();
+                    },
+                    child: const Text('Confirm name'),
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Pet: $petName'),
+                  Text('Happiness: $happiness / 100'),
+                  Text('Hunger: $hunger / 100'),
 
-    if (newName.isEmpty) return;
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _feedPet,
+                        child: const Text('Feed'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _playPet,
+                        child: const Text('Play'),
+                      ),
+                      ElevatedButton(
+                        onPressed: _resetPet,
+                        child: const Text('Reset'),
+                      ),
+                    ],
+                  ),
 
-    setState(() {
-      petName = newName;
-    });
-    FocusScope.of(context).unfocus();
-  },
-  child: const Text('Confirm name'),
-),
-const SizedBox(height: 16),
-Text('Pet: $petName'),
-Text('Happiness: $happiness / 100'),
-Text('Hunger: $hunger / 100'),
+                  const SizedBox(height: 16),
 
-const SizedBox(height: 16),
-Wrap(
-  spacing: 12,
-  runSpacing: 8,
-  children: [
-    ElevatedButton(
-      onPressed: _feedPet,
-      child: const Text('Feed'),
-    ),
-    ElevatedButton(
-      onPressed: _playPet,
-      child: const Text('Play'),
-    ),
-    ElevatedButton(
-      onPressed: _resetPet,
-      child: const Text('Reset'),
-    ),
-  ],
-),
-
-const SizedBox(height: 16),
-
-
-              const SizedBox(height: 16),
-              const SizedBox(height: 16),
+                  const SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   const Text('Choose a face'),
                   DropdownButton<FaceType>(
                     value: selectedFace,
@@ -217,22 +204,22 @@ const SizedBox(height: 16),
                         happiness > 70
                             ? Colors.green
                             : happiness >= 30
-                                ? Colors.yellow
-                                : Colors.red,
-                                BlendMode.modulate,
-                                ),
-                                child: Image.asset(
-                                  'assets/corgi.png',
-                                  width: canvasSide,
-                                  height: canvasSide,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Center(
+                            ? Colors.yellow
+                            : Colors.red,
+                        BlendMode.modulate,
+                      ),
+                      child: Image.asset(
+                        'assets/corgi.png',
+                        width: canvasSide,
+                        height: canvasSide,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
                     child: CustomPaint(
-                    size: Size(canvasSide, canvasSide),
+                      size: Size(canvasSide, canvasSide),
                       painter: const BullseyePainter(),
                     ),
                   ),
@@ -241,8 +228,8 @@ const SizedBox(height: 16),
                     happiness > 70
                         ? 'Mood: Happy'
                         : happiness >= 30
-                            ? 'Mood: Neutral'
-                            : 'Mood: Unhappy',
+                        ? 'Mood: Neutral'
+                        : 'Mood: Unhappy',
                   ),
                 ],
               );
@@ -318,8 +305,7 @@ class SmileyPainter extends CustomPainter {
         closedEyePaint,
       );
     } else {
-      final eyeRadius =
-          radius * (faceType == FaceType.surprised ? 0.16 : 0.10);
+      final eyeRadius = radius * (faceType == FaceType.surprised ? 0.16 : 0.10);
 
       canvas.drawCircle(leftEye, eyeRadius, eyePaint);
       canvas.drawCircle(rightEye, eyeRadius, eyePaint);
@@ -347,13 +333,7 @@ class SmileyPainter extends CustomPainter {
         height: radius * 0.8 * curve.abs(),
       );
 
-      canvas.drawArc(
-        mouthRect,
-        0,
-        curve > 0 ? pi : -pi,
-        false,
-        mouthPaint,
-      );
+      canvas.drawArc(mouthRect, 0, curve > 0 ? pi : -pi, false, mouthPaint);
     }
 
     final hatPaint = Paint()
@@ -380,10 +360,10 @@ class SmileyPainter extends CustomPainter {
       hatPaint,
     );
   }
+
   @override
   bool shouldRepaint(covariant SmileyPainter oldDelegate) {
-    return oldDelegate.mood != mood ||
-        oldDelegate.faceType != faceType;
+    return oldDelegate.mood != mood || oldDelegate.faceType != faceType;
   }
 }
 
