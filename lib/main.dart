@@ -1,5 +1,8 @@
 import 'dart:math' show pi;
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'dart:math' show pi;
+
 enum FaceType { classic, sleepy, surprised }
 
 void main() => runApp(const SmileyApp());
@@ -35,14 +38,45 @@ class _DrawingPlaygroundState extends State<DrawingPlayground> {
   String petName = 'The Man';
   int happiness = 50;
   int hunger = 50;
+  Timer? _hungerTimer;
   final TextEditingController _nameController =
     TextEditingController(text: 'The Man');
 
     @override
-    void dispose() {
-      _nameController.dispose();
-      super.dispose();
-    }
+void initState() {
+  super.initState();
+  _startHungerTimer();
+}
+
+void _startHungerTimer() {
+  _hungerTimer?.cancel();
+
+  _hungerTimer = Timer.periodic(
+    const Duration(seconds: 30),
+    (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      setState(() {
+        if (hunger + 5 > 100) {
+          hunger = 100;
+          happiness = _clampMeter(happiness - 20);
+        } else {
+          hunger += 5;
+        }
+      });
+    },
+  );
+}
+
+@override
+void dispose() {
+  _hungerTimer?.cancel();
+  _nameController.dispose();
+  super.dispose();
+}
 
 
 
@@ -71,10 +105,14 @@ void _playPet() {
   });
 }
 void _resetPet() {
+  _hungerTimer?.cancel();
+
   setState(() {
     happiness = 50;
     hunger = 50;
   });
+
+  _startHungerTimer();
 }
 
 
@@ -174,31 +212,38 @@ const SizedBox(height: 16),
                   ),
                   const SizedBox(height: 16),
                   Center(
-                    child: CustomPaint(
-                      size: Size(canvasSide, canvasSide),
-                      painter: SmileyPainter(
-                        mood: mood,
-                        faceType: selectedFace,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Center(
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        happiness > 70
+                            ? Colors.green
+                            : happiness >= 30
+                                ? Colors.yellow
+                                : Colors.red,
+                                BlendMode.modulate,
+                                ),
+                                child: Image.asset(
+                                  'assets/corgi.png',
+                                  width: canvasSide,
+                                  height: canvasSide,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Center(
                     child: CustomPaint(
                     size: Size(canvasSide, canvasSide),
                       painter: const BullseyePainter(),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Mood: ${mood.toStringAsFixed(2)}'),
-                  Slider(
-                    value: mood,
-                    onChanged: (double v) {
-                      setState(() {
-                        happiness = _clampMeter((v * 100).round());
-                      });
-                    },
-),
+                  Text(
+                    happiness > 70
+                        ? 'Mood: Happy'
+                        : happiness >= 30
+                            ? 'Mood: Neutral'
+                            : 'Mood: Unhappy',
+                  ),
                 ],
               );
             },
